@@ -1,1 +1,79 @@
+Manual EtherChannels
+
+No way of checking inconsistencies (only CDP is used to communicate with the other end)
+This never initiates or negotiates the creation of the Port-Channel
+
+[+] Configuration
+
+		interface range Gi1/0-3
+			Channel-group 1 mode on
+
+Channel-group # must be the same for all the interfaces that must be bundled together
+It may be different on both switches.
+
+[+] Verification
+
+show etherchannel 1 summary
+
+
+
+
+
+Dynamic EtherChannels - LACP
+
+IEEE 802.3ad
+Dynamic negotiation to create the Port-Channel (exchange of msgs)
+
+[+] Configuration
+
+		interface range Gi1/0-3
+			Channel-group 2 mode active|passive
+
+Channel-group # must be the same for all the interfaces that must be bundled together
+It may be different on both switches.
+
+[+] Verification
+
+show etherchannel 2 port-channel
+
+
+
+
+Troubleshooting L2 Port-Channels
+
+	1. WORKING CONFIGURATION OPTIONS:
+
++ On the local switch, all interfaces must be configured with the same channel-group #
++ On both switches, the channel-group # can be different
++ When using the on option, it must be configured explicitly on all interfaces
++ When using LACP, at least one switch must be configured with the active option.
+
+	2. INCORRECT SETTINGS THAT THE SWITCH ALLOWS:
+
++ One switch configured with on, and the other with active:
+	Po never forms, as the on option doesn't enable LACP
++ Configuring LACP on both switches with passive option:
+	Passive means: "I'm passively waiting for you to start the negotiation"
+	Po never forms.
+
+* In both cases, the Po is created, but its member interfaces keep working independently.
+
+	3. PHYSICAL LINKS CHECKS:
+
++ Each new link is compared against the working existing links in the Po. In case its parameters don't match with the others, it might be added to the Po but it won't be used as part of it. Typically, it's placed in a non-working logical state (err-disabled, etc)
+All these settings must match: 
+	- Speed
+	- Duplex
+	- Operational state: All must be Access or all must be Trunks
+	- Access VLAN
+	- Trunk allowed VLAN list
+	- Trunk native VLAN
+	- STP interface settings (cost, etc)*
+
++ The other end is also checked, using CDP (for Manual Pos) or LACP messages.
+
+* When using different STP settings, the interfaces are placed into err-disabled state:
+
+
+
 
